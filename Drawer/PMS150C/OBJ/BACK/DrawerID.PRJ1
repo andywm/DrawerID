@@ -1,0 +1,11 @@
+[INI]
+PROJECT=PRE_FILE
+[LINKS]
+~DrawerID.C
+[HEAD]
+~extern.h
+[DEPEND]
+~DrawerID.PRE
+[PRE]
+~DrawerID.PRJ
+~DrawerID.PRE

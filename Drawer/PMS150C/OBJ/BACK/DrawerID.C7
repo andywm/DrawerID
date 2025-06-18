@@ -1,49 +1,44 @@
 ﻿#include	"extern.h"
 
-//LED 		BIT PA.0;
-//LED_Mode 	BIT PAC.0;
+CLOCK_PIN BIT pa.0;
+DATA_OUT_PIN BIT pa.3;
 
 void	FPPA0 (void)
 {
-	.ADJUST_IC	SYSCLK=IHRC/4	//	SYSCLK=IHRC/4 , Vdd=3.3V
+	.ADJUST_IC	SYSCLK=IHRC/2
+	call _SYS(ADR.ROLL) + 2; 
 
-	//Port A config
+   // WORD    RollAddr, Low_Roll, High_Roll;
+  // RollAddr    =   _SYS (ADR.ROLL);
+   // Low_Roll    =   *RollAddr$W;
+   // RollAddr++;
+   // High_Roll   =   *RollAddr$W;
+	BYTE    Roll[2];
+    call    _SYS(ADR.ROLL);     //  Read Roll:0
+    Roll[0] =   A;
+    call    _SYS(ADR.ROLL) +1;  //  Read Roll:1
+    Roll[1] =   A;
+
+//	WORD Test = 0x0000;
+
 	PA = 0b_0000_0000; // Port A Data register
-	PAC = 0b_1111_0000; // Port A Control register, 0/1: input/output
-	PAPH = 0b_0000_0000; // Port A Pull-High Register 0/1: disable/enable
-	$ PADIER 0b_1111_1001; // Port A Digital Input Enable Register, 1/0: enable/disable, Bit 2:1 is reserved
+	PAC = 0b_1111_1111; // Port A Control register, 0:input / 1:output
+	PAPH = 0b_0000_0000; // Port A Pull-High Register, 0:disable / 1:enable
+	$ PADIER 0b_1111_1001; // Port A Digital Input Enable Register, 1:enable / 0:disable, Bit 2:1 is reserved
 
-//	PADIER = 0b_0100_0000; //1: input / 0:output 
-//	PAPH = 0b_0100_0000; //pullups
-
-//	set1 LED_Mode;
-//	set1 LED;
-
-	pa.0 = 1;
-//	pa.1 = 1;
-//	pa.2 = 1;
-	pa.3 = 1;
+	CLOCK_PIN = 0;
+	DATA_OUT_PIN = 0;
+	//pa.0 = 1;
+	//pa.3 = 1;
 
 	while (1)
 	{
-		pa.0 = 1;
-		pa.3 = 1;
+		set1 CLOCK_PIN;
+		set1 DATA_OUT_PIN;
+		//OUTPUTA = 0;
+	//	OUTPUTB = 0;
+		//pa.0 = 1;
+	//	pa.3 = 1;
 	//	wdreset;
 	}
 }
-
-
-//void	Interrupt (void)
-//{
-//	pushaf;
-//
-//	if (Intrq.T16)
-//	{	//	T16 Trig
-//		//	User can add code
-//		Intrq.T16	=	0;
-//		//...
-//	}
-//
-//	popaf;
-//}
-

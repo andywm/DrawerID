@@ -1,50 +1,44 @@
-﻿/*
-#include	"extern.h"
+﻿#include	"extern.h"
 
-// PA0: Input, PA3: Output
-
-void	FPPA0 (void)
-{
-	.ADJUST_IC SYSCLK=IHRC/2;
-	PA = 0b_0000_0000; // Port A Data register
-	PAC = 0b_1111_1110; // Port A Control register, 0/1: input/output
-	PAPH = 0b_0000_0001; // Port A Pull-High Register 0/1: disable/enable
-	$ PADIER 0b_1111_1001; // Port A Digital Input Enable Register, 1/0: enable/disable, Bit 2:1 is reserved
-	while (1)
-	{
-		if( pa.0 == 0)
-		{
-			pa.3 = 1;
-
-		}
-		else 
-		{
-			pa.3 = 1;
-		}
-//		...
-//		wdreset;
-
-	}
-}*/
-
-#include	"extern.h"
+CLOCK_PIN BIT pa.0;
+DATA_OUT_PIN BIT pa.3;
 
 void	FPPA0 (void)
 {
-	.ADJUST_IC	SYSCLK=IHRC/4
+	.ADJUST_IC	SYSCLK=IHRC/2
+	call _SYS(ADR.ROLL) + 2; 
+
+   // WORD    RollAddr, Low_Roll, High_Roll;
+  // RollAddr    =   _SYS (ADR.ROLL);
+   // Low_Roll    =   *RollAddr$W;
+   // RollAddr++;
+   // High_Roll   =   *RollAddr$W;
+	BYTE    Roll[4];
+    call    _SYS(ADR.ROLL);     //  Read Roll:0
+    Roll[0] =   A;
+    call    _SYS(ADR.ROLL) +1;  //  Read Roll:1
+    Roll[1] =   A;
+
+//	WORD Test = 0x0000;
 
 	PA = 0b_0000_0000; // Port A Data register
-	PAC = 0b_1111_0000; // Port A Control register, 0/1: input/output
-	PAPH = 0b_0000_0000; // Port A Pull-High Register 0/1: disable/enable
-	$ PADIER 0b_1111_1001; // Port A Digital Input Enable Register, 1/0: enable/disable, Bit 2:1 is reserved
+	PAC = 0b_1111_1111; // Port A Control register, 0:input / 1:output
+	PAPH = 0b_0000_0000; // Port A Pull-High Register, 0:disable / 1:enable
+	$ PADIER 0b_1111_1001; // Port A Digital Input Enable Register, 1:enable / 0:disable, Bit 2:1 is reserved
 
-	pa.0 = 1;
-	pa.3 = 1;
+	CLOCK_PIN = 0;
+	DATA_OUT_PIN = 0;
+	//pa.0 = 1;
+	//pa.3 = 1;
 
 	while (1)
 	{
-		pa.0 = 1;
-		pa.3 = 1;
+		set1 CLOCK_PIN;
+		set1 DATA_OUT_PIN;
+		//OUTPUTA = 0;
+	//	OUTPUTB = 0;
+		//pa.0 = 1;
+	//	pa.3 = 1;
 	//	wdreset;
 	}
 }
