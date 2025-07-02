@@ -11,10 +11,14 @@ void	FPPA0 (void)
 	call _SYS(ADR.ROLL) + 1; 
 
 	//Configure Port A
-	PA = 0b_0000_0000; // Port A Data register
+	PA = 0b_0000_0001; // Port A Data register
 	PAC = 0b_1111_1111; // Port A Control register, 0:input / 1:output
 	PAPH = 0b_0000_0000; // Port A Pull-High Register, 0:disable / 1:enable
 	$ PADIER 0b_1111_1001; // Port A Digital Input Enable Register, 1:enable / 0:disable, Bit 2:1 is reserved
+
+	INTEN = 0b_0000_0001; //Set interrupt on PA0 
+	INTEGS = 0b_0000_0000; //Risng & falling on PA0
+	INTRQ = 0; // Clear the INTRQ register
 
 	
 	//Read The Rolling Code
@@ -26,8 +30,6 @@ void	FPPA0 (void)
 
 	CLOCK_PIN = 0;
 	DATA_OUT_PIN = 0;
-	//pa.0 = 1;
-	//pa.3 = 1;
 
 	while (1)
 	{
@@ -39,4 +41,9 @@ void	FPPA0 (void)
 	//	pa.3 = 1;
 	//	wdreset;
 	}
+}
+
+void Irq()
+{
+
 }
