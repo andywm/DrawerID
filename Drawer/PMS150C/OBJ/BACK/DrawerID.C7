@@ -1,7 +1,30 @@
 ﻿#include	"extern.h"
 
-CLOCK_PIN BIT pa.0;
-DATA_OUT_PIN BIT pa.3;
+//This is commoned with the latch line on the shift registers
+READ_CLOCK BIT pa.0;
+WRITE_DATA BIT pa.3;
+
+BYTE TimeoutReset = 0;
+BYTE CurrentBit = 0;
+BYTE CurrentSetBit = 255;
+
+BYTE GetBit(WORD InWord, BYTE InBit)
+{
+	BYTE ReturnValue = 0;
+
+	.FOR ww, <0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15>
+		if (ww == InBit)
+		{
+			if(InWord$0.0)
+			{
+				ReturnValue = 1;
+			}
+		}
+	ENDM
+
+	return ReturnValue;
+}
+
 
 void	FPPA0 (void)
 {
@@ -11,26 +34,136 @@ void	FPPA0 (void)
 	call _SYS(ADR.ROLL) + 1; 
 
 	//Configure Port A
-	PA = 0b_0000_0000; // Port A Data register
+	PA = 0b_0000_0001; // Port A Data register
 	PAC = 0b_1111_1111; // Port A Control register, 0:input / 1:output
 	PAPH = 0b_0000_0000; // Port A Pull-High Register, 0:disable / 1:enable
 	$ PADIER 0b_1111_1001; // Port A Digital Input Enable Register, 1:enable / 0:disable, Bit 2:1 is reserved
 
-	INTEN = 0b_0000_0001; //Set interrupt on PA0 
-	INTRQ = 0; // Clear the INTRQ register
+	//Configure Timer
+	$ INTEN T16; //PA0,
+	$ Timer T16, 256;
+	$ INTEGS BIT_F;
 	
 	//Read The Rolling Code
-	BYTE    Roll[2];
-    call    _SYS(ADR.ROLL);     //  Read Roll:0
-    Roll[0] =   A;
-    call    _SYS(ADR.ROLL) + 1;  //  Read Roll:1
-    Roll[1] =   A;
+	//BYTE    Roll[2];
+	WORD 	RollCode;
 
+	//Byte Test = 0;
+    call    _SYS(ADR.ROLL);     //  Read Roll:0
+    //Roll[0] =   A;
+	RollCode$0 = A;
+    call    _SYS(ADR.ROLL) + 1;  //  Read Roll:1
+    //Roll[1] =   A;
+	RollCode$1 = A;
+
+	
+	while (1)
+	{
+		BYTE Value = 0;
+		if (CurrentSetBit != CurrentBit)
+		{
+			if( GetBit(RollCode, CurrentBit) == 1)
+			{
+				SET1 WRITE_DATA;
+			}
+			else
+			{
+				SET0 WRITE_DATA;
+			}
+			
+		}
+
+		//Spin until the latch line goes high.
+		while (!READ_CLOCK && !TimeoutReset)
+		{
+			 .DELAY 1; //no op
+		}
+
+		//ensure the latch line has gone low again before continuing.
+		while (READ_CLOCK && !TimeoutReset)
+		{
+			 .DELAY 1; //no op
+		}
+
+		CurrentBit++;
+		Intrq.T16 = 0; //Reset the timer for every successful bit.
+
+		if (TimeoutReset || CurrentBit == 16)
+		{
+			CurrentBit = 0;
+		}
+
+	}
+}
+
+void Interrupt(void)
+{
+	pushaf;
+
+	//Handle the second scale timer.
+	if (Intrq.T16)
+	{
+		TimeoutReset = 1;
+		//Intrq.T16 = 0;
+	}
+
+	popaf;
+}
+
+
+	//INTEN = 0b_0000_0001; //Set interrupt on PA0 
+//	INTEGS = 0b_0000_0000; //Risng & falling on PA0
+//	INTRQ = 0; // Clear the INTRQ register
+/*
 	CLOCK_PIN = 0;
 	DATA_OUT_PIN = 0;
 
+	WORD HIGHFOR;
+	BYTE WriteOutCommandSequence;
+	BYTE ShiftAddress;
+
 	while (1)
 	{
+		switch(State)
+		{
+		case STATE_WAIT_FOR_SEQ_BEGIN_HI:
+			break;
+		case STATE_WAIT_FOR_SEQ_BEGIN_LO:
+			break;
+		case STATE_WAIT_CLOCK_SYNC_HI:
+			break;
+		case STATE_WAIT_CLOCK_SYNC_LO:
+			break;
+
+		}
+		if (State == STATE_WAIT_FOR_SEQ_BEGIN_HI)
+		{
+			if(CLOCK_PIN == 1)
+			{
+				HIGHFOR = HIGHFOR+1;
+			}
+
+			if(HIGHFOR > 10000)
+			{
+				State = STATE_WAIT_FOR_SEQ_BEGIN_LO;
+			}
+			continue;
+		}
+
+
+		//if no sequence 
+		//wait for clockpin high 1 second
+		//low
+		//next high
+		//write out bit
+		//next low, shift
+		//repeat
+
+		if (CLOCK_PIN)
+		{
+			
+		}
+
 		set1 CLOCK_PIN;
 		set1 DATA_OUT_PIN;
 		//OUTPUTA = 0;
@@ -38,10 +171,31 @@ void	FPPA0 (void)
 		//pa.0 = 1;
 	//	pa.3 = 1;
 	//	wdreset;
-	}
-}
+	}*/
 
-void Irq()
-{
 
-}
+	/*
+		//	.FOR ww, <0,1,2,3,4,5,6,7>
+		//CurrentBit = ww;
+		if (CurrentBit < 8)
+		{
+
+			Value = RollCode & (0x01 << A);	
+		//	if(RollCode.*CurrentBit)
+			{
+				Value =1;
+			}
+			
+		//	if(Test)
+		//	{
+			//	Value =1;
+		//	}
+		//	Test.CurrentBit;
+			//BYTE Shift = (0x1 << 1);
+			 //Value = RollCode$0.0; //Test & Shift;// (0x1 << CurrentBit);
+		}
+	//	ENDM
+	//	else
+	//	{
+	//		Value = Roll[1] & (0x1 << CurrentBit);
+	//	}*/
