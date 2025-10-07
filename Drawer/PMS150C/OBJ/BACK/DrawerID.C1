@@ -58,14 +58,10 @@ void	FPPA0 (void)
 	SET0 WRITE_DATA;
 
 	//Read The Rolling Code
-    //call    _SYS(ADR.ROLL);     //  Read Roll:0
-	//RollCode$0 = A;
-    //call    _SYS(ADR.ROLL) + 1;  //  Read Roll:1
-	//RollCode$1 = A;
-
-	//Temp code....
-	RollCode$0 = 0b_1010_1010;
-	RollCode$1 = 0b_1010_1010;
+    call    _SYS(ADR.ROLL);     //  Read Roll:0
+	RollCode$0 = A;
+    call    _SYS(ADR.ROLL) + 1;  //  Read Roll:1
+	RollCode$1 = A;
 
 	while (1)
 	{

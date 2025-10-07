@@ -64,8 +64,8 @@ void	FPPA0 (void)
 	//RollCode$1 = A;
 
 	//Temp code....
-	RollCode$0 = 0b_1010_1010;
-	RollCode$1 = 0b_1010_1010;
+	RollCode$0 = 0b_1011_1011;
+	RollCode$1 = 0b_1011_1011;
 
 	while (1)
 	{

@@ -64,13 +64,13 @@ void	FPPA0 (void)
 	//RollCode$1 = A;
 
 	//Temp code....
-	RollCode$0 = 0b_1010_1010;
-	RollCode$1 = 0b_1010_1010;
+	RollCode$0 = 0b_1011_1011;
+	RollCode$1 = 0b_1011_1011;
 
 	while (1)
 	{
 		//Wait for the clock line to go low
-		while (READ_CLOCK == 0 && Intrq.T16 == 0)
+		while (READ_CLOCK == 1 && Intrq.T16 == 0)
 		{
 			 .DELAY 0; //no op
 		}
@@ -98,7 +98,7 @@ void	FPPA0 (void)
 		}
 
 		//Line must go high agian before we increment.
-		while (READ_CLOCK == 1 && Intrq.T16 == 0)
+		while (READ_CLOCK == 0 && Intrq.T16 == 0)
 		{
 			 .DELAY 0; //no op
 		}

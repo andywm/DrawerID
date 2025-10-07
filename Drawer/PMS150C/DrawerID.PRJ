@@ -24,6 +24,7 @@ PROJECT=PRE_FILE
 [DEPEND]
 ~$:INC_PDK\PMS150C.INC
 ~DrawerID.PRE
+~$:Help\Key\Timer.C
 [PRE]
 ~DrawerID.PRJ
 ~DrawerID.PRE
